@@ -21,8 +21,14 @@
             padding: 20px;
             border-radius: 6px;
             border: 1px solid #e1e4e8;
-            white-space: pre;
-            line-height: 1.4;
+            margin: 16px 0;
+        }
+
+        .folder-structure pre {
+            margin: 0;
+            overflow-x: auto;
+            font-size: 14px;
+            line-height: 1.45;
         }
 
         .code-block {
@@ -73,7 +79,7 @@
         <p>Create this folder structure in PyCharm:</p>
         
         <div class="folder-structure">
-library_system/
+<pre>library_system/
 ├── app.py           # Main Flask application
 ├── schema.sql       # Database schema
 ├── init_db.py      # Database initialization script
@@ -82,8 +88,8 @@ library_system/
 │   └── css/
 │       └── style.css
 └── templates/
-    └── index.html   # Main template</div>
-    </div>
+    └── index.html   # Main template</pre>
+</div>
 
     <div class="step">
         <h2>2. Dependencies</h2>
