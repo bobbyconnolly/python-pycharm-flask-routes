@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Project Setup Guide</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #1a1a1a;
+            background: #fff;
+        }
+
+        .folder-structure {
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            background: #f6f8fa;
+            padding: 20px;
+            border-radius: 6px;
+            border: 1px solid #e1e4e8;
+            white-space: pre;
+            line-height: 1.4;
+        }
+
+        .code-block {
+            background: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 8px 0;
+            overflow-x: auto;
+        }
+
+        .step {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .note {
+            background: #fff3bf;
+            border-left: 4px solid #fab005;
+            padding: 12px;
+            margin: 8px 0;
+        }
+
+        pre {
+            margin: 0;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .kw { color: #d73a49; }
+        .str { color: #032f62; }
+        .com { color: #6a737d; }
+        .fun { color: #6f42c1; }
+        .num { color: #005cc5; }
+
+        h2 { margin-top: 2em; }
+    </style>
+</head>
+<body>
+    <h1>Library Project Setup Guide</h1>
+
+    <div class="step">
+        <h2>1. Project Structure</h2>
+        <p>Create this folder structure in PyCharm:</p>
+        
+        <div class="folder-structure">
+library_system/
+├── app.py           # Main Flask application
+├── schema.sql       # Database schema
+├── init_db.py      # Database initialization script
+├── requirements.txt # Project dependencies
+├── static/
+│   └── css/
+│       └── style.css
+└── templates/
+    └── index.html   # Main template</div>
+    </div>
+
+    <div class="step">
+        <h2>2. Dependencies</h2>
+        <p>Create requirements.txt with:</p>
+        <div class="code-block">
+<pre>Flask==3.0.0</pre>
+        </div>
+        
+        <div class="note">
+        Run <code>pip install -r requirements.txt</code> in your PyCharm terminal to install dependencies.
+        </div>
+    </div>
+
+    <div class="step">
+        <h2>3. Database Schema</h2>
+        <p>Create schema.sql:</p>
+        <div class="code-block">
+<pre><span class="com">-- Drop tables if they exist</span>
+DROP TABLE IF EXISTS books;
+DROP TABLE IF EXISTS loans;
+
+<span class="com">-- Create books table</span>
+CREATE TABLE books (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    isbn TEXT UNIQUE,
+    author TEXT NOT NULL,
+    status TEXT DEFAULT 'available'
+);
+
+<span class="com">-- Create loans table</span>
+CREATE TABLE loans (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    book_id INTEGER NOT NULL,
+    member_id INTEGER NOT NULL,
+    loan_date TEXT NOT NULL,
+    due_date TEXT NOT NULL,
+    returned_date TEXT,
+    FOREIGN KEY (book_id) REFERENCES books (id)
+);</pre>
+        </div>
+    </div>
+
+    <div class="step">
+        <h2>4. Database Initialization</h2>
+        <p>Create init_db.py:</p>
+        <div class="code-block">
+<pre><span class="kw">import</span> sqlite3
+
+<span class="kw">def</span> <span class="fun">init_db</span>():
+    <span class="com"># Connect to database</span>
+    conn = sqlite3.connect(<span class="str">'library.db'</span>)
+    
+    <span class="com"># Read schema file</span>
+    <span class="kw">with</span> open(<span class="str">'schema.sql'</span>, <span class="str">'r'</span>) <span class="kw">as</span> f:
+        schema = f.read()
+    
+    <span class="com"># Execute schema</span>
+    conn.executescript(schema)
+    
+    <span class="com"># Add some test data</span>
+    conn.executescript(<span class="str">"""
+        INSERT INTO books (title, isbn, author) VALUES 
+        ('Python Basics', '1234567890123', 'John Doe'),
+        ('Flask Web Dev', '9876543210123', 'Jane Smith');
+    """</span>)
+    
+    conn.commit()
+    conn.close()
+    print(<span class="str">"Database initialized!"</span>)
+
+<span class="kw">if</span> __name__ == <span class="str">'__main__'</span>:
+    init_db()</pre>
+        </div>
+    </div>
+
+    <div class="step">
+        <h2>5. HTML Template</h2>
+        <p>Create templates/index.html:</p>
+        <div class="code-block">
+<pre><span class="kw">&lt;!DOCTYPE html&gt;</span>
+<span class="kw">&lt;html</span> <span class="fun">lang=</span><span class="str">"en"</span><span class="kw">&gt;</span>
+<span class="kw">&lt;head&gt;</span>
+    <span class="kw">&lt;meta</span> <span class="fun">charset=</span><span class="str">"UTF-8"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;meta</span> <span class="fun">name=</span><span class="str">"viewport"</span> <span class="fun">content=</span><span class="str">"width=device-width, initial-scale=1.0"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;title&gt;</span>Library System<span class="kw">&lt;/title&gt;</span>
+    <span class="kw">&lt;link</span> <span class="fun">rel=</span><span class="str">"stylesheet"</span> <span class="fun">href=</span><span class="str">"{{ url_for('static', filename='css/style.css') }}"</span><span class="kw">&gt;</span>
+<span class="kw">&lt;/head&gt;</span>
+<span class="kw">&lt;body&gt;</span>
+    <span class="kw">&lt;div</span> <span class="fun">class=</span><span class="str">"container"</span><span class="kw">&gt;</span>
+        <span class="kw">&lt;h1&gt;</span>Library Management System<span class="kw">&lt;/h1&gt;</span>
+
+        <span class="com">&lt;!-- Add Book Form --&gt;</span>
+        <span class="kw">&lt;div</span> <span class="fun">class=</span><span class="str">"section"</span><span class="kw">&gt;</span>
+            <span class="kw">&lt;h2&gt;</span>Add New Book<span class="kw">&lt;/h2&gt;</span>
+            <span class="kw">&lt;form</span> <span class="fun">action=</span><span class="str">"{{ url_for('add_book') }}"</span> <span class="fun">method=</span><span class="str">"post"</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;div</span> <span class="fun">class=</span><span class="str">"form-group"</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;label</span> <span class="fun">for=</span><span class="str">"title"</span><span class="kw">&gt;</span>Title:<span class="kw">&lt;/label&gt;</span>
+                    <span class="kw">&lt;input</span> <span class="fun">type=</span><span class="str">"text"</span> <span class="fun">id=</span><span class="str">"title"</span> <span class="fun">name=</span><span class="str">"title"</span> <span class="fun">required</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;/div&gt;</span>
+                <span class="kw">&lt;div</span> <span class="fun">class=</span><span class="str">"form-group"</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;label</span> <span class="fun">for=</span><span class="str">"isbn"</span><span class="kw">&gt;</span>ISBN:<span class="kw">&lt;/label&gt;</span>
+                    <span class="kw">&lt;input</span> <span class="fun">type=</span><span class="str">"text"</span> <span class="fun">id=</span><span class="str">"isbn"</span> <span class="fun">name=</span><span class="str">"isbn"</span> <span class="fun">required</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;/div&gt;</span>
+                <span class="kw">&lt;div</span> <span class="fun">class=</span><span class="str">"form-group"</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;label</span> <span class="fun">for=</span><span class="str">"author"</span><span class="kw">&gt;</span>Author:<span class="kw">&lt;/label&gt;</span>
+                    <span class="kw">&lt;input</span> <span class="fun">type=</span><span class="str">"text"</span> <span class="fun">id=</span><span class="str">"author"</span> <span class="fun">name=</span><span class="str">"author"</span> <span class="fun">required</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;/div&gt;</span>
+                <span class="kw">&lt;button</span> <span class="fun">type=</span><span class="str">"submit"</span><span class="kw">&gt;</span>Add Book<span class="kw">&lt;/button&gt;</span>
+            <span class="kw">&lt;/form&gt;</span>
+        <span class="kw">&lt;/div&gt;</span>
+
+        <span class="com">&lt;!-- Create Loan Form --&gt;</span>
+        <span class="kw">&lt;div</span> <span class="fun">class=</span><span class="str">"section"</span><span class="kw">&gt;</span>
+            <span class="kw">&lt;h2&gt;</span>Create Loan<span class="kw">&lt;/h2&gt;</span>
+            <span class="kw">&lt;form</span> <span class="fun">action=</span><span class="str">"{{ url_for('create_loan') }}"</span> <span class="fun">method=</span><span class="str">"post"</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;div</span> <span class="fun">class=</span><span class="str">"form-group"</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;label</span> <span class="fun">for=</span><span class="str">"member_id"</span><span class="kw">&gt;</span>Member ID:<span class="kw">&lt;/label&gt;</span>
+                    <span class="kw">&lt;input</span> <span class="fun">type=</span><span class="str">"number"</span> <span class="fun">id=</span><span class="str">"member_id"</span> <span class="fun">name=</span><span class="str">"member_id"</span> <span class="fun">required</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;/div&gt;</span>
+                <span class="kw">&lt;div</span> <span class="fun">class=</span><span class="str">"form-group"</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;label</span> <span class="fun">for=</span><span class="str">"book_id"</span><span class="kw">&gt;</span>Book ID:<span class="kw">&lt;/label&gt;</span>
+                    <span class="kw">&lt;input</span> <span class="fun">type=</span><span class="str">"number"</span> <span class="fun">id=</span><span class="str">"book_id"</span> <span class="fun">name=</span><span class="str">"book_id"</span> <span class="fun">required</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;/div&gt;</span>
+                <span class="kw">&lt;button</span> <span class="fun">type=</span><span class="str">"submit"</span><span class="kw">&gt;</span>Create Loan<span class="kw">&lt;/button&gt;</span>
+            <span class="kw">&lt;/form&gt;</span>
+        <span class="kw">&lt;/div&gt;</span>
+
+        <span class="com">&lt;!-- Return Book Form --&gt;</span>
+        <span class="kw">&lt;div</span> <span class="fun">class=</span><span class="str">"section"</span><span class="kw">&gt;</span>
+            <span class="kw">&lt;h2&gt;</span>Return Book<span class="kw">&lt;/h2&gt;</span>
+            <span class="kw">&lt;form</span> <span class="fun">class=</span><span class="str">"return-form"</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;div</span> <span class="fun">class=</span><span class="str">"form-group"</span><span class="kw">&gt;</span>
+                    <span class="kw">&lt;label</span> <span class="fun">for=</span><span class="str">"loan_id"</span><span class="kw">&gt;</span>Loan ID:<span class="kw">&lt;/label&gt;</span>
+                    <span class="kw">&lt;input</span> <span class="fun">type=</span><span class="str">"number"</span> <span class="fun">id=</span><span class="str">"loan_id"</span> <span class="fun">name=</span><span class="str">"loan_id"</span> <span class="fun">required</span><span class="kw">&gt;</span>
+                <span class="kw">&lt;/div&gt;</span>
+                <span class="kw">&lt;button</span> <span class="fun">type=</span><span class="str">"submit"</span><span class="kw">&gt;</span>Return Book<span class="kw">&lt;/button&gt;</span>
+            <span class="kw">&lt;/form&gt;</span>
+        <span class="kw">&lt;/div&gt;</span>
+    <span class="kw">&lt;/div&gt;</span>
+    
+    <span class="com">&lt;!-- Response Messages --&gt;</span>
+    <span class="kw">&lt;div</span> <span class="fun">id=</span><span class="str">"message"</span> <span class="fun">class=</span><span class="str">"message"</span><span class="kw">&gt;&lt;/div&gt;</span>
+<span class="kw">&lt;/body&gt;</span>
+<span class="kw">&lt;/html&gt;</span></pre>
+                </div>
+            
+                <h2>6. CSS Styling</h2>
+                <p>Create static/css/style.css:</p>
+                
+                <div class="code-block">
+            <pre><span class="com">/* Basic Reset */</span>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: Arial, sans-serif;
+                line-height: 1.6;
+                padding: 20px;
+                background: #f5f5f5;
+            }
+            
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+            
+            .section {
+                margin-bottom: 30px;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+            
+            input {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 16px;
+            }
+            
+            button {
+                background: #007bff;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 16px;
+            }
+            
+            button:hover {
+                background: #0056b3;
+            }
+            
+            .message {
+                margin: 20px 0;
+                padding: 10px;
+                border-radius: 4px;
+            }
+            
+            .success {
+                background: #d4edda;
+                color: #155724;
+                border: 1px solid #c3e6cb;
+            }
+            
+            .error {
+                background: #f8d7da;
+                color: #721c24;
+                border: 1px solid #f5c6cb;
+            }</pre>
+                </div>
+            
+                <h2>7. Running the Project</h2>
+                <p>Create app.py (where you'll implement your routes) with this basic structure:</p>
+                
+                <div class="code-block">
+            <pre><span class="kw">from</span> flask <span class="kw">import</span> Flask, request, render_template
+<span class="kw">import</span> sqlite3
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, timedelta
+
+app = Flask(__name__)
+
+<span class="kw">def</span> <span class="fun">get_db</span>():
+    conn = sqlite3.connect(<span class="str">'library.db'</span>)
+    conn.row_factory = sqlite3.Row
+    <span class="kw">return</span> conn
+
+<span class="dec">@app</span>.route(<span class="str">'/'</span>)
+<span class="kw">def</span> <span class="fun">index</span>():
+    <span class="kw">return</span> render_template(<span class="str">'index.html'</span>)
+
+<span class="com"># Your route implementations will go here</span>
+
+<span class="kw">if</span> __name__ == <span class="str">'__main__'</span>:
+    app.run(debug=<span class="kw">True</span>)</pre>
+                </div>
+            
+                <h2>Setup Steps</h2>
+                <ol>
+                    <li>Create project folder structure</li>
+                    <li>Copy all files with their contents</li>
+                    <li>Run <code>pip install -r requirements.txt</code></li>
+                    <li>Run <code>python init_db.py</code> to initialize the database</li>
+                    <li>Run <code>python app.py</code> to start the server</li>
+                    <li>Visit <code>http://localhost:5000</code> in your browser</li>
+                </ol>
